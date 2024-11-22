@@ -50,6 +50,7 @@
                                 <th scope="col">{{ __("Title") }}</th>
                                 <th scope="col">{{ __("Department") }}</th>
                                 <th scope="col">{{ __("is_published") }}</th>
+                                <th scope="col">{{ __("Type") }}</th>
                                 @if(Auth::user()->hasRole('Super-Admin') || Auth::user()->hasAnyPermission(['course.edit' , 'course.delete']))
                                 <th scope="col">{{ __("Action") }}</th>
                                 @endif
@@ -67,6 +68,11 @@
                                 </td>
                                 <td>
                                     <x-CheckUnCheck isChecked="{{ $course->is_published }}" />
+                                </td>
+                                <td>
+                                    <div class="badge">
+                                        {{ ucFirst($course->type) }}
+                                    </div>
                                 </td>
                                 @if(Auth::user()->hasRole('Super-Admin') || Auth::user()->hasAnyPermission(['course.edit' , 'course.delete']))
                                 <td>

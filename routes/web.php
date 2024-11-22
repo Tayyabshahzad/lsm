@@ -37,18 +37,14 @@ use App\Http\Controllers\TrialClassController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Livewire\VideoCall;
 use App\Http\Controllers\Admin\AttendanceController as AdminAttendanceController;
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
-Route::get('/video-call', [FrontController::class,'video'])->name('video.call');
+
+Route::get('/video-call', [FrontController::class, 'video'])->name('video.call');
 Route::get('/', [FrontController::class, 'index'])->name('home');
+
+Route::get('/courses/trial', [TrialClassController::class,'courseTrial'])->name('courses.trial');
+Route::post('/courses/start/trial', [TrialClassController::class,'startTrial'])->name('courses.startTrial');
+Route::get('/courses/{course}/content', [TrialClassController::class,'showContent'])->middleware('trial.active')->name('courses.content');
+Route::post('/trials/{trial}/complete', [TrialClassController::class, 'completeTrial'])->name('trials.complete');
 
 
 Route::group(['prefix' => 'front', 'as' => 'front.'], function () {
@@ -57,92 +53,50 @@ Route::group(['prefix' => 'front', 'as' => 'front.'], function () {
     Route::get('/plans', [FrontCourseController::class, 'plans'])->name('plans');
 });
 
-
-/*
-|--------------------------------------------------------------------------
-| Web Routes for learner access
-|--------------------------------------------------------------------------
-*/
 Route::prefix('learn')->middleware(['verified'])->group(function () {
-
     Route::get('/task/{participant}/{sessionable}', [WorkoutController::class, 'task'])->name('taskLearner');
     Route::post('/task/{participant}/{sessionable}', [WorkoutController::class, 'prepared'])->name('taskLearnerPrepared');
     Route::post('/quiz/workout', [WorkoutController::class, 'workout'])->name('quizWorkout');
-
-    // my course route
     Route::get('my/course', [MyCourseController::class, 'myCourse'])->name('myCourse');
     Route::get('my/course/{participant}', [MyCourseController::class, 'learn'])->name('learningCourse');
-
-    // doing workout || excercise || quiz
     Route::get('/completeAndNext/{workout}', [WorkoutController::class, 'completedAndNext'])->name('completedAndNext');
 });
-
-
-/*
-|--------------------------------------------------------------------------
-| Web Routes for mentors and super-visor access
-|--------------------------------------------------------------------------
-*/
 Route::prefix('mentor')->middleware(['verified'])->group(function () {
-
     Route::get('/learners', [MyLearnerController::class, 'myLearners'])->name('myLearners');
     Route::get('/learner/{user}', [ParticipantController::class, 'participantTerms'])->name('learnerShowTerms');
     Route::get('/workout/{participant}', [ParticipantController::class, 'participantWorkout'])->name('learnerParticipantWorkout');
     Route::get('/review/workout/{participant}/{workout}', [ParticipantController::class, 'reviewWorkout'])->name('reviewWorkout');
     Route::post('/review/update', [ParticipantController::class, 'reviewWorkoutUpdate'])->name('workoutMentorReviewUpdate');
-
     Route::resource('mentor-comments', MentorCommentsController::class);
 });
 
-
-/*
-|--------------------------------------------------------------------------
-| Web Routes for only Admin Access
-|--------------------------------------------------------------------------
-*/
 Route::prefix('panel')->middleware(['verified'])->group(function () {
-
-    // Admin Menu
     Route::get('/menu/education', [CourseManagmentController::class, 'courses'])->name('adminMenuCourse');
     Route::get('/menu/plugins', [CourseManagmentController::class, 'plugins'])->name('adminMenuPlugins');
-
     Route::get('/dashboard', [GeneralController::class, 'dashboard'])->name('dashboard');
     Route::get('/settings', [SettingController::class, 'index'])->name('settings');
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
     Route::patch('/setting/{user}', [SettingController::class, 'update'])->name('setting.update');
-
-    // Repository
     Route::resource('department', DepartmentController::class);
     Route::resource('course', CourseController::class);
     Route::resource('term', TermController::class);
     Route::resource('session', SessionController::class);
-    
-
-
     Route::post('attendances/checkout/{attendanceId}', [AttendanceController::class, 'checkOut'])->name('attendances.checkout');
     Route::get('attendances/marked', [AttendanceController::class, 'markedAttendance'])->name('teacher.attendance.marked');
     Route::get('attendances/mark', [AttendanceController::class, 'markAttendance'])->name('attendances.mark');
     Route::middleware(['role:teacher|Super-Admin'])->group(function () {
-        //Route::resource('attendance', AttendanceController::class);
-        
-       
-        //Route::post('attendances/store', [AttendanceController::class, 'storeAttendance'])->name('attendances.store');
-
-
+        //Route::resource('attendance', AttendanceController::class); 
+        //Route::post('attendances/store', [AttendanceController::class, 'storeAttendance'])->name('attendances.store'); 
         // Route::get('teacher/attendances/mark', [AttendanceController::class, 'teacherAttendance'])->name('teacher.attendance.mark');
         // Route::post('teacher/attendances/mark', [AttendanceController::class, 'markAttendance'])->name('attendance.mark');
         // Route::post('teacher/attendances/checkout/{id}', [AttendanceController::class, 'checkOut'])->name('attendance.checkout');
     });
-
-
     Route::middleware(['auth', 'role:student'])->group(function () {
         Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
         Route::post('/attendance/check-in', [AttendanceController::class, 'checkIn'])->name('attendance.checkIn');
         Route::post('/attendance/check-out', [AttendanceController::class, 'checkOut'])->name('attendance.checkOut');
         Route::get('/attendance/view', [AttendanceController::class, 'viewAttendance'])->name('attendance.view');
     });
-
-
     Route::resource('file', FileController::class);
     Route::resource('activity', ActivityController::class);
     Route::resource('document', DocumentController::class);
@@ -156,9 +110,7 @@ Route::prefix('panel')->middleware(['verified'])->group(function () {
     Route::get('course/{id}/pricing/edit', [CourseController::class, 'editPricing'])->name('course.pricing.edit');
     Route::put('course/{id}/pricing', [CourseController::class, 'updatePricing'])->name('course.pricing.update');
     Route::resource('trial-classes', TrialClassController::class);
-    // signle functions:
     Route::get('logs', [LogController::class, 'index'])->name('logs');
-
     Route::get('/document/order/{from}/{move}', [DocumentController::class, 'orderChangeFiles'])->name("changeOrderFile");
     Route::get('/document/file/add/{document}/{file}', [DocumentController::class, 'addFileToDocument'])->name("addFileToDocument");
     Route::get('/document/file/delete/{documentFile}', [DocumentController::class, 'deleteFileAsDocument'])->name("deleteFileDocument");
@@ -167,44 +119,24 @@ Route::prefix('panel')->middleware(['verified'])->group(function () {
     Route::get('/session/order/{from}/{move}', [SessionController::class, 'changeOrderSessionable'])->name("changeOrderSessionable");
     Route::get('/session/quiz/{session}/{active_id}', [SessionController::class, 'addQuizToSession'])->name("addQuizToSession");
     Route::get('/session/delete/{session_id}', [SessionController::class, 'deleteActivityAsSession'])->name("deleteActivityAsSession");
-
-
-    // Global Configuration (Admin Only)
     Route::resource('/configuration', ConfigurationController::class)->middleware('role:Super-Admin');
-
-    // rubric add to session
     Route::get('/session/rubric/{session}/{active_id}', [SessionController::class, 'addRubricToSession'])->name("addRubricToSession");
-
-    // Quiz Question Relationship
     Route::get('/quiz/order/{from}/{move}', [QuizController::class, 'orderChangeQuestion'])->name("orderChangeQuestion");
     Route::get('/quiz/question/add/{parent}/{question}', [QuizController::class, 'addQuestionToQuiz'])->name("addQuestionToQuiz");
     Route::get('/quiz/question/delete/{quizQuestion}', [QuizController::class, 'deleteQuestionAsQuiz'])->name("deleteQuestionAsQuiz");
-
-    // feedback question relationship
     Route::get('/feedback/order/{from}/{move}', [FeedbackController::class, 'orderChangeQuestionFeedback'])->name("orderChangeQuestionFeedback");
     Route::get('/feedback/question/add/{parent}/{question}', [FeedbackController::class, 'addQuestionToFeedback'])->name("addQuestionToFeedback");
     Route::get('/feedback/question/delete/{feedbackQuestion}', [FeedbackController::class, 'deleteQuestionAsFeedback'])->name("deleteQuestionAsFeedback");
     Route::get('/session/feedback/{session}/{active_id}', [SessionController::class, 'addFeedbackToSession'])->name("addFeedbackToSession");
-
-
-    // add session  to term
     Route::get('/term/add/{term}/session/{session}', [TermSessionController::class, 'store'])->name("addSessionToTerm");
     Route::get('/term/remove/{term}/session/{session}', [TermSessionController::class, 'destroy'])->name("deleteSessionAsTerm");
     Route::get('/term/order/{from}/{move}', [TermSessionController::class, 'order'])->name("orderChangeSession");
-
-    // ACL Route
     Route::resource('user', UserController::class)->middleware('role:Super-Admin');
     Route::resource('role', RoleController::class)->middleware('role:Super-Admin');
     Route::resource('permission', PermissionController::class)->middleware('role:Super-Admin');
     Route::post('role/permission/{role}', [RoleController::class, 'permission'])->name("role_permissions");
-
-
     Route::middleware('role:Super-Admin')->group(function () {
-
-
         Route::resource('testimonials', TestimonialsController::class);
-
-
         // Route::get('testimonials', [TestimonialsController::class, 'index'])->name('testimonial.index');
         // Route::get('testimonials/create', [TestimonialsController::class, 'create'])->name('testimonial.create');
         // Route::post('testimonials/store', [TestimonialsController::class, 'store'])->name('testimonial.store');
@@ -215,14 +147,8 @@ Route::prefix('panel')->middleware(['verified'])->group(function () {
             Route::get('/attendances/edit/{id}', [AdminAttendanceController::class, 'edit'])->name('attendances.edit');
             Route::post('/attendances/update/{id}', [AdminAttendanceController::class, 'update'])->name('attendances.update');
             Route::delete('/attendances/delete/{id}', [AdminAttendanceController::class, 'destroy'])->name('attendances.destroy');
-            
-            // Optional routes for reports and export
             Route::get('/attendances/report', [AdminAttendanceController::class, 'report'])->name('attendances.report');
             Route::get('/attendances/export', [AdminAttendanceController::class, 'export'])->name('attendances.export');
         });
-
-
     });
-
-
 });

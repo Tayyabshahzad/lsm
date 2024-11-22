@@ -26,6 +26,7 @@ class CourseRequest extends FormRequest
         return [
             'title' => 'required',
             'department_id' => 'required|int',
+            'type' => 'required',
         ];
     }
 }

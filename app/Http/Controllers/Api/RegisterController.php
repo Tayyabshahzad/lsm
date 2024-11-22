@@ -11,7 +11,11 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Hash;
 use App\Mail\RegistrationConfirmationMail;
 use App\Models\Course;
+use App\Models\Term;
+use App\Models\TrialClass;
 use Illuminate\Support\Facades\Mail;
+use Spatie\Permission\Models\Role;
+
 class RegisterController extends Controller
 {
     /**
@@ -41,21 +45,23 @@ class RegisterController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
-    {
+    { 
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
+            'name'         => 'required|string|max:255',
+            'email'        => 'required|string|email|max:255|unique:users',
+            'password'     => 'required|string|min:8|confirmed',
             'phone_number' => 'required|string|unique:users',
-            'country' => 'required|string',
+            'country'      => 'required|string',
+            'course'       => 'required',
+            'term'         => 'required',
         ]); 
         if ($validator->fails()) {
             return response()->json([
                 'message' => json_encode($validator->errors()->all()),
             ], 422);
-        } 
-        
-        // Create a new user
+        }  
+        $term = Term::find($request->term);      
+        $course = Course::find($request->course);    
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -64,19 +70,19 @@ class RegisterController extends Controller
             'country' => $request->country,
         ]); 
         $user->assignRole('student');
-
-        $course = Course::find($request->courseId); // Find the course by ID
+        $role = Role::where('name', 'student')->first();
+        $term->participants()->attach($user, ['role_id' => $role->id]);
         if ($course) {
             $trialClassController = new TrialClassController();
             $trialClassResponse = $trialClassController->registerTrialClass($request, $user, $course);
-        }
-        Mail::to($user->email)->send(new RegistrationConfirmationMail($user));
+            $lastTrialClass = TrialClass::latest()->first(); 
+        } 
+        Mail::to($user->email)->queue(new RegistrationConfirmationMail($user,$term,$lastTrialClass,$course));
         return response()->json([
             'message' => 'User successfully registered!',
             'user' => $user,
             'trial' => isset($trialClassResponse) ? $trialClassResponse->getData() : null, // Include trial info if available
-        ], 201); 
-        
+        ], 201);  
     }
 
     /**

@@ -15,10 +15,17 @@ class CourseController extends Controller
      */
     public function index(): JsonResponse
     {
-        $courses = Course::with(['Terms','Department'])->orderBy('id','desc')->limit(12)->get();
+        $courses = Course::with(['Terms','Department'])->where('type','!=','science')->orderBy('id','desc')->get();
         return response()->json($courses);
     }
 
+    public function courseScience(): JsonResponse
+
+    {
+        $courses = Course::with(['Terms','Department'])->where('type','science')->orderBy('id','desc')->get();
+        return response()->json($courses);
+    } 
+    
     /**
      * Show the form for creating a new resource.
      *
@@ -56,6 +63,13 @@ class CourseController extends Controller
             });
         }
         return response()->json($course);
+    }
+
+    public function getTerms($id){
+        $course = Course::with(['Terms','Department','pricings'])->where('id',$id)->first(); 
+        return response()->json([
+            'terms'=>$course->Terms
+        ],200);
     }
 
     /**

@@ -40,6 +40,14 @@ class Course extends Model
     {
         return $this->hasMany(TrialClass::class);
     }
+
+    public function trialStudents()
+    {
+        return $this->belongsToMany(User::class, 'trials', 'course_id', 'student_id')
+                    ->withPivot('trial_start', 'trial_end')
+                    ->withTimestamps();
+    }
+
     
 
 }

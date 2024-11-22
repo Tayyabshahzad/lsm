@@ -21,18 +21,19 @@ class Participant extends Component
     }
 
     public function addParticipantToTerm(User $user, Role $role)
-    {
+    { 
+        dd($role);
         $this->term->participants()->attach($user, ['role_id' => $role->id]);
         $this->termUpdated();
     }
 
-    public function deleteParticipantAsTerm(ModelsParticipant $participant){
+    public function deleteParticipantAsTerm(ModelsParticipant $participant){ 
         $participant->delete();
         $this->termUpdated();
     }
 
     public function termUpdated()
-    {
+    { 
         $this->term = Term::with('Participants')->find($this->term->id);
     }
 
@@ -46,6 +47,7 @@ class Participant extends Component
      */
     public function render()
     {
+        
         $search = '%' . $this->search . '%';
         $users = User::where('name', 'LIKE', $search)
             ->orWhere('email', 'LIKE', $search)

@@ -5,6 +5,10 @@ namespace App\Http\Controllers\Front;
 use App\Http\Controllers\Controller;
 use App\Services\Front\HomeServices;
 use App\Events\SignalEvent;
+use App\Models\Course;
+use App\Models\TrialClass;
+use App\Models\User;
+
 class FrontController extends Controller
 {
 
@@ -34,7 +38,10 @@ class FrontController extends Controller
 
     public function video()
     { 
-        return view('video.index');
+        $course = Course::first();
+        $user = User::first();
+        $trialClassResponse = TrialClass::first();
+        return view('emails.registration_confirmation',compact('course','user','trialClassResponse'));
     }
 
 

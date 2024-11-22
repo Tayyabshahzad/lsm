@@ -24,7 +24,7 @@
                                 <tr>
                                     <th scope="col">#</th>
                                     <th scope="col">{{ __('Course Title') }}</th>
-                                    <th scope="col">{{ __('Department') }}</th>
+                                    <th scope="col">{{ __('Item Count') }}</th>
                                     <th scope="col">{{ __('Pricing') }}</th>
                                     @if (Auth::user()->hasRole('Super-Admin') || Auth::user()->hasAnyPermission(['course.edit', 'course.delete']))
                                         <th scope="col">{{ __('Action') }}</th>
@@ -55,7 +55,7 @@
                                                 </a>
                                                 <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink" style="">
                                                     <div class="dropdown-header">{{ __('Actions') }}:</div>
-                                                    <a  class="p-2" href="{{ route('course.pricing.edit', $course->id) }}" >
+                                                    <a  class="p-2 btn" href="{{ route('course.pricing.edit', $course->id) }}" >
                                                         Edit Pricing
                                                     </a>
 

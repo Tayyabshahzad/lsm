@@ -25,7 +25,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('testimonials', [TestimonialsController::class, 'index']);
 Route::get('teachers', [TeamController::class, 'index']);
 Route::get('courses', [CourseController::class, 'index']);
+Route::get('courses/science', [CourseController::class, 'courseScience']); 
 Route::get('courses/{id}', [CourseController::class, 'show']);
+Route::get('courses/{id}/terms', [CourseController::class, 'getTerms']);
 Route::resource('trial-classes', TrialClassController::class);
 Route::post('auth/register', [RegisterController::class, 'store']);
 

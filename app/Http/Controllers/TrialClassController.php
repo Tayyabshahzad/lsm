@@ -15,6 +15,11 @@ class TrialClassController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
+    public function courseTrial(){
+        $courses = Course::get();
+        return view('contents.front.index.trail',compact('courses'));
+    }
     public function index()
     {
         //
@@ -151,25 +156,29 @@ class TrialClassController extends Controller
     }
 
 
-    public function startTrial(Request $request, $courseId)
+    public function startTrial(Request $request)
     {
-        $course = Course::findOrFail($courseId);
-        $user = auth()->user(); 
-        $existingTrial = TrialClass::where('user_id', $user->id)
-            ->where('course_id', $courseId)
+       
+        $course = Course::findOrFail($request->course); 
+        if (!$course->has_trial) {
+            return redirect()->back()->with('error', 'Trial not available for this course.');
+        }
+        $student = auth()->user();
+        $existingTrial = $student->trialCourses()->where('course_id', $request->course)->first();
+
+        $existingTrial = TrialClass::where('user_id', 26)
+            ->where('course_id', $course->id)
             ->where('status', 'pending')
             ->first(); 
         if ($existingTrial) {
             return redirect()->back()->with('error', 'You already have an active trial for this course.');
-        }
-
-        // Set trial start and end times
+        } 
         $trialDuration = 7; // e.g., 7-day trial
         $trialStart = now();
         $trialEnd = now()->addDays($trialDuration); 
         // Create new trial entry
         TrialClass::create([
-            'user_id' => $user->id,
+            'user_id' => 26,
             'course_id' => $course->id,
             'status' => 'pending',
             'trial_start' => $trialStart,
@@ -178,4 +187,12 @@ class TrialClassController extends Controller
 
         return redirect()->route('courses.index')->with('success', 'Trial started successfully!');
     }
+
+    public function completeTrial($trialId)
+    {
+        $trial = TrialClass::findOrFail($trialId);
+        $trial->update(['status' => 'completed']); 
+        return redirect()->back()->with('success', 'Trial completed successfully.');
+    }
+
 }

@@ -89,4 +89,13 @@ class User extends Authenticatable
     {
         return $this->hasMany(TrialClass::class);
     }
+
+
+    public function trialCourses()
+    {
+        return $this->belongsToMany(Course::class, 'trials', 'student_id', 'course_id')
+                    ->withPivot('trial_start', 'trial_end')
+                    ->withTimestamps();
+    }
+
 }

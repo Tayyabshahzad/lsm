@@ -49,6 +49,7 @@ class CourseController extends Controller
      */
     public function store(CourseRequest $request)
     {
+
         $this->authorize('course.create');
         $this->service->store($request->all());
         return $this->service->redirect();

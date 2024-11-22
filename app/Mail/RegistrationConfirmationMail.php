@@ -9,18 +9,28 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use App\Models\User;
-class RegistrationConfirmationMail extends Mailable
+
+class RegistrationConfirmationMail extends Mailable implements ShouldQueue
 {
+    
+    
+
     use Queueable, SerializesModels;
     public $user;
+    public $term;
+    public $trialClassResponse;
+    public $course;
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct(User $user)
+    public function __construct(User $user,$term,$trialClassResponse,$course)
     {
         $this->user = $user;
+        $this->term = $term;
+        $this->trialClassResponse = $trialClassResponse;
+        $this->course = $course;
     }
 
     /**
@@ -31,7 +41,7 @@ class RegistrationConfirmationMail extends Mailable
     public function envelope()
     {
         return new Envelope(
-            subject: 'Registration Confirmation Mail',
+            subject: "Get Ready! Your Trial Class for ".$this->course->title." is Schedule",
         );
     }
 

@@ -41,6 +41,10 @@
                             <x-forms.DropDown model="Department" name="department_id" selected="{{ $course->department_id ?? 0 }}" />
                          </div> 
 
+                         <div class="col-sm-6 mb-3 mb-sm-0">
+                            <x-forms.CourseType name="course_type"  />
+                         </div> 
+
 
                          <div class="col-sm-6">
                             <label>{{ __('File') }}</label>
